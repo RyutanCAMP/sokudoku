@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#4FC3F7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="速読カウンター">
+<meta name="format-detection" content="telephone=no">
+<meta name="robots" content="noindex,nofollow">
+<title>速読 文字数カウンター（テスト版 Ver1.2）</title>
+<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+  --ocean:#006994;--ocean-light:#0099cc;--sand-light:#FFF8E7;
+  --sunset:#FF6B35;--hibiscus:#E8325A;--gold:#FFB300;
+  --text:#1a3a4a;--text-soft:#5a7a8a;--card:rgba(255,255,255,0.93);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Nunito','Yu Gothic UI','Meiryo',sans-serif;background:var(--sand-light);color:var(--text);min-height:100vh;overflow-x:hidden;-webkit-text-size-adjust:100%;text-size-adjust:100%;-webkit-tap-highlight-color:transparent;}
+button,label,input{touch-action:manipulation;}
+
+/* 海背景 */
+.ocean-bg{position:fixed;top:0;left:0;right:0;height:180px;background:linear-gradient(180deg,#87CEEB 0%,#4FC3F7 40%,#006994 80%,#004d6e 100%);z-index:0;overflow:hidden;}
+.wave{position:absolute;bottom:0;left:-100%;width:300%;height:50px;background:rgba(255,255,255,0.22);border-radius:50% 50% 0 0/26px;animation:waveMove 6s linear infinite;}
+.wave2{bottom:9px;animation:waveMove 9s linear infinite reverse;background:rgba(255,255,255,0.13);height:42px;}
+.wave3{bottom:18px;animation:waveMove 12s linear infinite;background:rgba(255,255,255,0.08);height:34px;}
+@keyframes waveMove{from{transform:translateX(0);}to{transform:translateX(33.33%);}}
+.sun{position:absolute;top:14px;right:56px;width:46px;height:46px;background:radial-gradient(circle,#FFE566 40%,#FFB300 100%);border-radius:50%;box-shadow:0 0 26px 8px rgba(255,200,0,0.38);animation:sunPulse 4s ease-in-out infinite;}
+@keyframes sunPulse{0%,100%{box-shadow:0 0 26px 8px rgba(255,200,0,0.38);}50%{box-shadow:0 0 44px 16px rgba(255,200,0,0.55);}}
+.palm-left{position:absolute;bottom:0;left:10px;font-size:62px;line-height:1;transform-origin:bottom center;animation:palmSway 5s ease-in-out infinite;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.18));}
+.palm-right{position:absolute;bottom:0;right:16px;font-size:48px;line-height:1;transform:rotate(8deg) scaleX(-1);transform-origin:bottom center;animation:palmSway 7s ease-in-out infinite reverse;filter:drop-shadow(2px 2px 3px rgba(0,0,0,0.18));}
+@keyframes palmSway{0%,100%{transform:rotate(-10deg);}50%{transform:rotate(-5deg);}}
+
+/* レイアウト */
+.container{position:relative;z-index:10;max-width:520px;margin:0 auto;padding:0 max(16px, env(safe-area-inset-left,0px)) calc(48px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-right,0px));}
+header{padding-top:24px;text-align:center;margin-bottom:16px;}
+.header-title-row{display:grid;grid-template-columns:32px minmax(0,1fr) 45px;align-items:center;gap:5px;margin-top:2px;}
+.header-title-row h1{white-space:nowrap;min-width:0;}
+.help-btn{justify-self:start;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,0.58);background:rgba(255,255,255,0.18);color:#fff;font-size:17px;font-weight:800;cursor:pointer;}
+.help-btn:active{background:rgba(255,255,255,0.32);}
+.app-version{justify-self:end;display:inline-block;padding:3px 5px;border-radius:7px;background:rgba(0,50,85,0.18);color:rgba(255,255,255,0.9);font-size:10px;font-weight:800;letter-spacing:0;white-space:nowrap;}
+.hdr-emoji{font-size:24px;margin-bottom:2px;animation:floatY 3s ease-in-out infinite;}
+@keyframes floatY{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
+header h1{font-family:'Pacifico','Yu Gothic UI',cursive;font-size:23px;color:#fff;text-shadow:2px 3px 7px rgba(0,60,100,0.38);}
+.sub-txt{font-size:11px;color:rgba(255,255,255,0.84);letter-spacing:1px;margin-top:3px;font-weight:600;}
+.divider{height:3px;background:linear-gradient(90deg,#006994,#0099cc,#87CEEB,#FF6B35,#E8325A);border-radius:2px;margin:0 0 14px;opacity:0.35;}
+
+.card{background:var(--card);border-radius:18px;padding:18px;box-shadow:0 6px 20px rgba(0,105,148,0.1),0 1px 4px rgba(0,0,0,0.05);margin-bottom:12px;border:1px solid rgba(255,255,255,0.82);}
+.step-header{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.step-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--ocean-light),var(--ocean));color:#fff;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.step-title{font-size:14px;font-weight:800;color:var(--ocean);}
+
+.calc-type-tabs{display:flex;gap:6px;margin-bottom:12px;}
+.calc-type-btn{flex:1;padding:11px 6px;min-height:46px;border-radius:10px;border:2px solid #c8e6f0;background:#f0faff;font-family:inherit;font-size:12px;font-weight:800;color:var(--text-soft);cursor:pointer;transition:all 0.2s;text-align:center;}
+.calc-type-btn.active{border-color:var(--ocean-light);background:linear-gradient(135deg,#e0f7fa,#e8f4ff);color:var(--ocean);}
+.calc-type-btn:active{opacity:0.75;}
+
+.formula-box{background:linear-gradient(135deg,#e0f7fa,#e8f4ff);border-left:4px solid var(--ocean-light);border-radius:9px;padding:9px 13px;font-size:11px;color:#2a5a72;margin-bottom:12px;line-height:1.8;white-space:pre-line;font-weight:600;}
+.form-group{margin-bottom:12px;}
+label{display:block;font-size:12px;font-weight:800;color:var(--text-soft);margin-bottom:4px;}
+input[type="number"], input[type="text"]{width:100%;padding:11px 13px;font-size:16px;font-family:inherit;font-weight:700;border:2px solid #c8e6f0;border-radius:11px;background:#f0faff;transition:all 0.2s;color:var(--text);}
+input[type="number"]:focus, input[type="text"]:focus{outline:none;border-color:var(--ocean-light);background:#fff;box-shadow:0 0 0 3px rgba(0,153,204,0.15);}
+input[type="number"]::placeholder, input[type="text"]::placeholder{color:#c0dae6;opacity:1;}
+.decimal-entry{display:flex;gap:8px;align-items:stretch;}
+.decimal-entry input{flex:1;min-width:0;}
+.decimal-btn{min-width:48px;min-height:48px;border:2px solid #c8e6f0;border-radius:11px;background:#e8f4ff;color:var(--ocean);font:800 23px 'Nunito',sans-serif;cursor:pointer;}
+.decimal-btn:active{background:#c8e6f0;}
+.decimal-hint{margin-top:5px;font-size:11px;color:var(--text-soft);line-height:1.5;}
+.err{color:var(--hibiscus);font-size:11px;margin-top:3px;display:none;font-weight:700;}
+
+.time-mode-group{display:flex;gap:7px;}
+.time-mode-btn{flex:1;padding:10px 6px;min-height:46px;border-radius:11px;border:2px solid #c8e6f0;background:#f0faff;font-family:inherit;font-size:12px;font-weight:800;color:var(--text-soft);cursor:pointer;transition:all 0.2s;text-align:center;line-height:1.4;}
+.time-mode-btn.active{border-color:var(--ocean-light);background:linear-gradient(135deg,#e0f7fa,#e8f4ff);color:var(--ocean);box-shadow:0 2px 7px rgba(0,153,204,0.18);}
+.time-mode-btn.active-fast{border-color:#FF6B35;background:linear-gradient(135deg,#fff3ee,#fff8f0);color:#cc4400;box-shadow:0 2px 7px rgba(255,107,53,0.18);}
+.time-mode-btn:active{opacity:0.75;}
+.mode-sub{font-size:9px;opacity:0.72;margin-top:1px;}
+
+.btn-row{display:flex;gap:8px;margin-top:14px;}
+.btn-calc{flex:2;padding:14px;min-height:50px;background:linear-gradient(135deg,#FF6B35,#E8325A);color:#fff;font-size:14px;font-weight:800;font-family:inherit;border:none;border-radius:13px;cursor:pointer;box-shadow:0 3px 12px rgba(232,50,90,0.3);transition:transform 0.15s;}
+.btn-calc:active{transform:scale(0.97);}
+.btn-secondary{flex:1;padding:14px;min-height:50px;background:#f0faff;color:var(--text-soft);font-size:13px;font-weight:700;font-family:inherit;border:2px solid #c8e6f0;border-radius:13px;cursor:pointer;}
+.btn-secondary:active{opacity:0.75;}
+@media (hover:hover){
+  .btn-calc:hover{transform:translateY(-1px);box-shadow:0 5px 16px rgba(232,50,90,0.38);}
+  .btn-secondary:hover{background:#e0f0fa;}
+  .calc-type-btn:hover:not(.active),.time-mode-btn:hover:not(.active):not(.active-fast){background:#e4f4fc;}
+}
+
+.result-box{display:none;background:linear-gradient(135deg,#006994,#0099cc);border-radius:14px;padding:20px 18px;margin-top:14px;text-align:center;animation:splashIn 0.35s ease;box-shadow:0 5px 18px rgba(0,105,148,0.28);position:relative;overflow:hidden;}
+.result-box::before{content:'🌊';position:absolute;top:-8px;left:-8px;font-size:55px;opacity:0.12;}
+.result-box::after{content:'🌺';position:absolute;bottom:-8px;right:-4px;font-size:55px;opacity:0.18;}
+@keyframes splashIn{0%{opacity:0;transform:scale(0.92) translateY(8px);}60%{transform:scale(1.02);}100%{opacity:1;transform:scale(1) translateY(0);}}
+.result-label{font-size:12px;color:rgba(255,255,255,0.78);margin-bottom:4px;font-weight:700;}
+.result-num{font-family:'Pacifico','Yu Gothic UI',cursive;font-size:38px;color:#fff;font-variant-numeric:tabular-nums;}
+.result-unit{font-size:14px;color:rgba(255,255,255,0.82);margin-left:3px;font-weight:700;}
+.result-breakdown{font-size:11px;color:rgba(255,255,255,0.75);margin-top:8px;line-height:1.7;white-space:pre-line;font-weight:600;}
+.result-copy{margin-top:12px;padding:9px 16px;min-height:40px;background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.45);color:#fff;font-family:inherit;font-size:12px;font-weight:800;border-radius:10px;cursor:pointer;}
+.result-copy:active{opacity:0.7;}
+
+.tip{font-size:11px;color:#8ab8cc;font-weight:600;line-height:1.7;background:rgba(255,255,255,0.75);border-radius:12px;padding:11px 14px;}
+.toast{position:fixed;bottom:calc(26px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(18px);background:#1a3a4a;color:#fff;padding:11px 20px;border-radius:13px;font-size:12px;font-weight:700;font-family:inherit;box-shadow:0 5px 20px rgba(0,0,0,0.22);white-space:pre-line;text-align:center;line-height:1.55;z-index:9999;opacity:0;pointer-events:none;transition:opacity 0.28s ease,transform 0.28s ease;max-width:290px;width:88%;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+.toast.warn{background:linear-gradient(135deg,#FF6B35,#E8325A);}
+footer{text-align:center;font-size:11px;color:#8ca5af;margin-top:10px;font-weight:600;}
+.maker-credit{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;color:#657e8b;font-size:10px;font-weight:600;letter-spacing:0.06em;opacity:0.75;}
+.maker-credit::before,.maker-credit::after{content:'';display:block;width:20px;height:1px;background:#bad1db;}
+.maker-credit strong{font-weight:800;}
+[hidden]{display:none!important;}
+.help-overlay{position:fixed;inset:0;background:rgba(0,38,60,0.64);backdrop-filter:blur(4px);z-index:990;}
+.help-modal{position:fixed;z-index:991;top:50%;left:50%;transform:translate(-50%,-50%);width:min(calc(100% - 32px),440px);max-height:82vh;max-height:82dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#fff;border:1px solid #c5e2ed;border-radius:18px;box-shadow:0 15px 45px rgba(0,28,54,0.32);padding:20px 18px;color:#1a3a4a;text-align:left;}
+.help-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid #d6ecf5;}
+.help-modal h2{font-size:17px;color:#006994;margin:0;font-weight:800;}
+.help-close{flex:none;display:grid;place-items:center;width:36px;height:36px;border:0;background:#e9f5fb;border-radius:50%;color:#006994;font-size:22px;cursor:pointer;}
+.help-intro{font-size:12px;line-height:1.7;margin-top:12px;color:#345769;}
+.help-steps{padding-left:22px;margin:14px 0;}
+.help-steps li{padding-left:4px;margin-bottom:12px;font-size:12px;line-height:1.75;}
+.help-steps strong{color:#006994;}
+.help-formula{background:#edf8fc;border-radius:12px;padding:12px;font-size:11px;line-height:1.8;}
+.help-formula strong{color:#006994;}
+.help-formula p{margin:5px 0;}
+.help-ok{display:block;width:100%;margin-top:14px;min-height:44px;background:linear-gradient(135deg,#0099cc,#006994);color:#fff;border:0;border-radius:10px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;}
+
+@media (max-width:400px){
+  .ocean-bg{height:168px;}
+  header h1{font-size:21px;}
+  .palm-left{font-size:52px;}.palm-right{font-size:40px;}
+  .result-num{font-size:32px;}
+  .card{padding:16px 14px;}
+}
+
+/* Ver1.2: Minimal splash, no external libraries or images */
+.opening{position:fixed;inset:0;z-index:1500;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;isolation:isolate;padding:calc(20px + env(safe-area-inset-top,0px)) 20px calc(24px + env(safe-area-inset-bottom,0px));background:radial-gradient(ellipse at 50% 35%,#0a7190 0%,#004564 49%,#06243e 100%);color:#fff;text-align:center;opacity:1;visibility:visible;transition:opacity .3s ease,visibility .3s ease;}
+.opening[hidden]{display:none!important;}
+.opening.exiting{opacity:0;visibility:hidden;pointer-events:none;}
+.opening::before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(165deg,transparent 22%,rgba(125,230,255,.06) 49%,transparent 76%);}
+.opening::after{content:'';position:absolute;left:-20%;right:-20%;bottom:15%;height:26%;border-top:1px solid rgba(138,229,255,.13);border-radius:50%;transform:rotate(-8deg);z-index:-1;}
+.opening-skip{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:calc(14px + env(safe-area-inset-right,0px));min-width:68px;min-height:44px;padding:8px 12px;border:1px solid rgba(184,235,249,.35);border-radius:25px;background:rgba(0,34,56,.24);color:#e6fbff;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;}
+.opening-skip:active{background:rgba(174,234,250,.2);}
+.opening-content{display:flex;align-items:center;flex-direction:column;width:100%;max-width:340px;}
+.opening-mark{display:grid;place-items:center;width:100px;height:100px;margin-bottom:23px;border:1px solid rgba(167,239,255,.45);border-radius:50%;box-shadow:0 0 35px rgba(96,227,255,.09),inset 0 0 30px rgba(111,231,250,.04);animation:opening-rise .75s ease-out both;}
+.opening-mark svg{width:53px;height:53px;filter:drop-shadow(0 0 10px rgba(136,241,255,.35));}
+.opening-kicker{margin:0 0 9px;color:#b7e4ed;font-weight:800;font-size:10px;letter-spacing:.22em;animation:opening-rise .65s .08s both;}
+.opening-title{margin:0;font-size:clamp(58px,17vw,80px);font-weight:900;line-height:1.15;letter-spacing:.08em;text-indent:.08em;text-shadow:0 7px 28px rgba(0,30,55,.28);animation:opening-rise .7s .15s both;}
+.opening-underline{width:44px;height:2px;margin:22px auto 16px;background:#99ebfa;box-shadow:0 0 18px rgba(133,235,255,.7);animation:opening-line .65s .35s both;}
+.opening-subtitle{margin:0;font-size:16px;font-weight:800;letter-spacing:.08em;animation:opening-rise .65s .3s both;}
+.opening-description{margin:14px 0 0;color:#c1e2ec;font-size:12px;letter-spacing:.03em;animation:opening-rise .65s .45s both;}
+.opening-progress{position:absolute;bottom:calc(34px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);width:min(200px,54vw);height:2px;border-radius:2px;overflow:hidden;background:rgba(183,233,245,.25);}
+.opening-progress::before{content:'';display:block;width:100%;height:100%;transform:scaleX(0);transform-origin:left;background:linear-gradient(90deg,#58c8df,#fff);animation:opening-load 1.25s linear forwards;}
+@keyframes opening-rise{from{opacity:0;transform:translateY(11px)}to{opacity:1;transform:translateY(0)}}
+@keyframes opening-line{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+@keyframes opening-load{to{transform:scaleX(1)}}
+@media(prefers-reduced-motion:reduce){.opening,.opening *{animation:none!important;transition:none!important}.opening-progress::before{animation:none!important;transform:scaleX(1)}}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;}
+}
+</style>
+
+</head>
+<body>
+
+<div id="opening-splash" class="opening" aria-label="速読文字数カウンターのオープニング">
+  <button type="button" class="opening-skip" onclick="dismissOpening()">スキップ</button>
+  <div class="opening-content">
+    <div class="opening-mark" aria-hidden="true">
+      <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg" fill="none">
+        <path d="M32 16c-9-7-17-7-25-5v37c9-3 18-2 25 4 7-6 16-7 25-4V11c-8-2-16-2-25 5Z" stroke="#D5FAFF" stroke-width="2.8" stroke-linejoin="round"/>
+        <path d="M32 16v36M14 22c4-1 8 0 12 2M38 24c4-2 8-3 12-2M14 32c4-1 8 0 12 2M38 34c4-2 8-3 12-2" stroke="#82E7F7" stroke-width="2.4" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <p class="opening-kicker">RYUTAN AI</p>
+    <h2 class="opening-title">速読</h2>
+    <div class="opening-underline"></div>
+    <p class="opening-subtitle">文字数カウンター</p>
+    <p class="opening-description">読んだ量を、すぐ文字数に。</p>
+  </div>
+  <div class="opening-progress" aria-hidden="true"></div>
+</div>
+
+<div class="ocean-bg">
+  <div class="sun"></div>
+  <div class="palm-left">🌴</div>
+  <div class="palm-right">🌴</div>
+  <div class="wave"></div><div class="wave wave2"></div><div class="wave wave3"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<div class="container">
+  <header>
+    <div class="hdr-emoji">📖 🌺 🧮</div>
+    <div class="header-title-row">
+      <button type="button" class="help-btn" id="help-button" aria-label="使い方を開く" aria-expanded="false" aria-controls="help-modal" onclick="openHelp()">？</button>
+      <h1>速読 文字数カウンター</h1>
+      <span class="app-version" aria-label="バージョン 1.2">Ver1.2</span>
+    </div>
+    <div class="sub-txt">読んだ量を、1分あたりの文字数に</div>
+  </header>
+
+  <div class="divider"></div>
+
+  <div class="card">
+    <div class="step-header">
+      <div class="step-num">1</div>
+      <div class="step-title">🌅 読んだ量を入力</div>
+    </div>
+
+    <div class="calc-type-tabs">
+      <button class="calc-type-btn active" id="type-page" onclick="setCalcType('page')">📄 ページ計算</button>
+      <button class="calc-type-btn" id="type-book" onclick="setCalcType('book')">📚 冊数計算</button>
+    </div>
+
+    <div id="page-form">
+      <div class="formula-box">計算式：（完読ページ − 15P）× 14行 ＋ 端数行）× 40文字
+※ 最初の15ページ（まえがき等）を除外</div>
+      <div class="form-group">
+        <label for="in-endp">完読ページ数</label>
+        <input type="number" id="in-endp" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" min="16" placeholder="例: 280">
+        <div class="err" id="err-endp">⚠️ 16ページ以上を入力してください</div>
+      </div>
+      <div class="form-group">
+        <label for="in-frac">端数行数（0〜13）</label>
+        <input type="number" id="in-frac" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" min="0" max="13" placeholder="例: 7">
+        <div class="err" id="err-frac">⚠️ 0〜13の範囲で入力してください</div>
+      </div>
+    </div>
+
+    <div id="book-form" hidden>
+      <div class="formula-box">計算式：読んだ冊数（パラ数）× 176,960文字
+※ 1パラ = 1冊読み切り／小数入力OK（例 2.5冊）</div>
+      <div class="form-group">
+        <label for="in-para">読んだ冊数（パラ数）※小数OK</label>
+        <div class="decimal-entry">
+          <input type="text" id="in-para" inputmode="decimal" autocomplete="off" autocapitalize="off" enterkeyhint="done" placeholder="例: 2.5" aria-describedby="err-para">
+          <button type="button" class="decimal-btn" onclick="insertDecimalPoint()" aria-label="小数点を入力">.</button>
+        </div>
+        <div class="decimal-hint">小数点が出ないときは、右の「.」を押してください</div>
+        <div class="err" id="err-para">⚠️ 0.1以上の数値を入力してください（小数OK：例 2.5）</div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>⏱ 読み取り時間</label>
+      <div class="time-mode-group">
+        <button class="time-mode-btn active" id="mode-1m" onclick="setTimeMode('1m')">⏰ 1分<div class="mode-sub">そのまま計算</div></button>
+        <button class="time-mode-btn" id="mode-15s" onclick="setTimeMode('15s')">⚡ 15秒<div class="mode-sub">×4 換算</div></button>
+      </div>
+    </div>
+
+    <div class="result-box" id="result-box">
+      <div class="result-label">1分あたりの文字数</div>
+      <div><span class="result-num" id="result-num">0</span><span class="result-unit"> 文字</span></div>
+      <div class="result-breakdown" id="result-breakdown"></div>
+      <button class="result-copy" onclick="copyResult()">📋 結果をコピー</button>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-calc" onclick="calc()">🧮 計測する</button>
+      <button class="btn-secondary" onclick="resetAll()">リセット</button>
+    </div>
+  </div>
+
+  <div class="tip">💡 <b>端数行数</b>＝最後のページで読んだ行数（0〜13行）。<br>15秒モードは結果を4倍して「1分あたり」に換算します。</div>
+
+  <footer>📌 使用書籍：コミュニケーション大全</footer>
+  <div class="maker-credit">製作：<strong>りゅうたんAI</strong></div>
+</div>
+
+<div class="help-overlay" id="help-overlay" hidden onclick="closeHelp()"></div>
+<section class="help-modal" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+  <div class="help-modal-head">
+    <h2 id="help-title">📖 使い方ガイド</h2>
+    <button type="button" class="help-close" id="help-close" aria-label="使い方を閉じる" onclick="closeHelp()">×</button>
+  </div>
+  <p class="help-intro">このアプリは、読んだ量を<strong>1分あたりの文字数</strong>に換算する計算ツールです。読み取り時間を測るタイマー機能はありません。</p>
+  <ol class="help-steps">
+    <li><strong>計算方法を選ぶ</strong><br>「ページ計算」では完読ページ数（16ページ以上）と端数行数（0～13行）を入力します。端数行がなければ空欄でもOKです。<br>「冊数計算」では読んだ冊数（パラ数）を入力します。0.1冊以上の小数も使えます。小数点が打てないときは入力欄の右にある「.」を押してください。</li>
+    <li><strong>読み取り時間を選ぶ</strong><br>「1分」は入力した量をそのまま換算。「15秒」は4倍して1分あたりの文字数を表示します。</li>
+    <li><strong>計測する</strong><br>「計測する」を押すと文字数が表示されます。結果の「コピー」ボタンで文字数をコピーできます。</li>
+    <li><strong>続けて計算／リセット</strong><br>数字やモードを変えたら、もう一度「計測する」を押してください。古い結果は自動で消えます。「リセット」は入力を消し、ページ計算・1分モードに戻します。</li>
+  </ol>
+  <div class="help-formula">
+    <strong>計算の基準（使用書籍：コミュニケーション大全）</strong>
+    <p>ページ：｛（完読ページ数 − 15）× 14行 ＋ 端数行数｝× 40文字</p>
+    <p>冊数：読んだ冊数 × 176,960文字</p>
+    <p>※ 最初の15ページは除外。15秒モードは計算結果を4倍して表示します。</p>
+  </div>
+  <button type="button" class="help-ok" onclick="closeHelp()">閉じる</button>
+</section>
+
+<script>
+let calcType = 'page';
+let timeMode = '1m';
+let lastResult = null;
+const PREF_KEY = 'spd_counter_pref_test_v1_1';
+
+function fmt(n){ return Number(n).toLocaleString(); }
+
+function dismissOpening(){
+  const el = document.getElementById('opening-splash');
+  if(el.hidden || el.classList.contains('exiting')) return;
+  el.classList.add('exiting');
+  setTimeout(() => { el.hidden = true; }, 300);
+}
+
+
+function openHelp(){
+  document.getElementById('help-overlay').hidden = false;
+  document.getElementById('help-modal').hidden = false;
+  document.getElementById('help-button').setAttribute('aria-expanded','true');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('help-close').focus();
+}
+function closeHelp(){
+  document.getElementById('help-overlay').hidden = true;
+  document.getElementById('help-modal').hidden = true;
+  document.getElementById('help-button').setAttribute('aria-expanded','false');
+  document.body.style.overflow = '';
+  document.getElementById('help-button').focus();
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && !document.getElementById('help-modal').hidden) closeHelp();
+});
+
+function invalidateResult(){
+  lastResult = null;
+  document.getElementById('result-box').style.display = 'none';
+}
+
+function insertDecimalPoint(){
+  const el = document.getElementById('in-para');
+  if(/[.,，]/.test(el.value)){ el.focus(); return; }
+  const caret = typeof el.selectionStart === 'number' ? el.selectionStart : el.value.length;
+  const empty = el.value.length === 0;
+  el.value = empty ? '0.' : el.value.slice(0,caret)+'.'+el.value.slice(caret);
+  el.focus();
+  if(typeof el.setSelectionRange === 'function') el.setSelectionRange(empty ? 2 : caret+1, empty ? 2 : caret+1);
+  invalidateResult();
+  document.getElementById('err-para').style.display = 'none';
+}
+
+function setCalcType(type){
+  calcType = type;
+  invalidateResult();
+  document.getElementById('type-page').classList.toggle('active', type==='page');
+  document.getElementById('type-book').classList.toggle('active', type==='book');
+  document.getElementById('page-form').hidden = (type !== 'page');
+  document.getElementById('book-form').hidden = (type !== 'book');
+  savePref();
+}
+
+function setTimeMode(mode){
+  timeMode = mode;
+  invalidateResult();
+  document.getElementById('mode-1m').className  = 'time-mode-btn' + (mode==='1m'  ? ' active' : '');
+  document.getElementById('mode-15s').className = 'time-mode-btn' + (mode==='15s' ? ' active-fast' : '');
+  savePref();
+}
+
+function savePref(){
+  try{ localStorage.setItem(PREF_KEY, JSON.stringify({calcType, timeMode})); }catch(e){}
+}
+function loadPref(){
+  try{
+    const p = JSON.parse(localStorage.getItem(PREF_KEY) || '{}');
+    if(p.calcType === 'book') setCalcType('book');
+    if(p.timeMode === '15s')  setTimeMode('15s');
+  }catch(e){}
+}
+
+function calc(){
+  invalidateResult();
+  let chars = 0, breakdown = '';
+  ['err-endp','err-frac','err-para'].forEach(id => document.getElementById(id).style.display = 'none');
+  const mult = timeMode === '15s' ? 4 : 1;
+  const modeNote = timeMode === '15s' ? '⚡ 15秒モード × 4' : '⏰ 1分モード（換算なし）';
+
+  if(calcType === 'page'){
+    const endRaw = document.getElementById('in-endp').value.trim();
+    const fracRaw = document.getElementById('in-frac').value.trim();
+    const endP = Number(endRaw);
+    const frac = fracRaw === '' ? 0 : Number(fracRaw);
+    const validEnd = /^\d+$/.test(endRaw) && Number.isSafeInteger(endP) && endP >= 16;
+    const validFrac = (fracRaw === '' || /^\d+$/.test(fracRaw)) && Number.isSafeInteger(frac) && frac >= 0 && frac <= 13;
+    if(!validEnd) document.getElementById('err-endp').style.display = 'block';
+    if(!validFrac) document.getElementById('err-frac').style.display = 'block';
+    if(!validEnd || !validFrac) return;
+    const pages = endP - 15;
+    const lines = pages * 14 + frac;
+    chars = Math.round(lines * 40 * mult);
+    breakdown = `有効: ${pages}P×14行+${frac}行=${fmt(lines)}行×40文字\n${modeNote}`;
+  } else {
+    const raw = document.getElementById('in-para').value.trim().replace(/[,，]/g,'.');
+    const para = Number(raw);
+    const valid = /^(?:\d+(?:\.\d*)?|\.\d+)$/.test(raw) && Number.isFinite(para) && para >= 0.1;
+    if(!valid){ document.getElementById('err-para').style.display = 'block'; return; }
+    chars = Math.round(para * 176960 * mult);
+    breakdown = `${raw}冊×176,960文字/冊\n${modeNote}`;
+  }
+  if(!Number.isSafeInteger(chars) || chars <= 0){
+    showToast('⚠️ 入力値が大きすぎます', 'warn');
+    return;
+  }
+
+  lastResult = chars;
+  document.getElementById('result-num').textContent = fmt(chars);
+  document.getElementById('result-breakdown').textContent = breakdown;
+  document.getElementById('result-box').style.display = 'block';
+  showToast(`${fmt(chars)}文字！`);
+}
+
+function resetAll(){
+  ['in-endp','in-frac','in-para'].forEach(id => document.getElementById(id).value = '');
+  ['err-endp','err-frac','err-para'].forEach(id => document.getElementById(id).style.display = 'none');
+  document.getElementById('result-box').style.display = 'none';
+  lastResult = null;
+  setCalcType('page');
+  setTimeMode('1m');
+}
+
+async function copyResult(){
+  if(lastResult === null) return;
+  const txt = `${fmt(lastResult)}文字（1分あたり）`;
+  try{
+    await navigator.clipboard.writeText(txt);
+    showToast('📋 コピーしました');
+  }catch(e){
+    showToast('⚠️ コピーできませんでした', 'warn');
+  }
+}
+
+function showToast(msg, type){
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast ' + (type === 'warn' ? 'warn ' : '') + 'show';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2600);
+}
+
+document.querySelectorAll('input[type="number"],input[type="text"]').forEach(el => {
+  el.addEventListener('input', () => {
+    invalidateResult();
+    ['err-endp','err-frac','err-para'].forEach(id => document.getElementById(id).style.display = 'none');
+  });
+  el.addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); el.blur(); calc(); } });
+});
+
+loadPref();
+const reducedMotion = typeof window.matchMedia === 'function' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+setTimeout(dismissOpening, reducedMotion ? 100 : 1400);
+</script>
+
+</body>
+</html>
