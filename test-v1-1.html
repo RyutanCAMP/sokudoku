@@ -35,8 +35,12 @@ button,label,input{touch-action:manipulation;}
 
 /* レイアウト */
 .container{position:relative;z-index:10;max-width:520px;margin:0 auto;padding:0 max(16px, env(safe-area-inset-left,0px)) calc(48px + env(safe-area-inset-bottom,0px)) max(16px, env(safe-area-inset-right,0px));}
-header{position:relative;padding-top:24px;text-align:center;margin-bottom:16px;}
-.app-version{position:absolute;top:4px;right:0;padding:3px 7px;border-radius:8px;background:rgba(0,50,85,0.22);color:#fff;font-size:10px;font-weight:800;letter-spacing:0.2px;white-space:nowrap;}
+header{padding-top:24px;text-align:center;margin-bottom:16px;}
+.header-title-row{display:grid;grid-template-columns:32px minmax(0,1fr) 45px;align-items:center;gap:5px;margin-top:2px;}
+.header-title-row h1{white-space:nowrap;min-width:0;}
+.help-btn{justify-self:start;display:grid;place-items:center;width:32px;height:32px;border-radius:50%;border:1px solid rgba(255,255,255,0.58);background:rgba(255,255,255,0.18);color:#fff;font-size:17px;font-weight:800;cursor:pointer;}
+.help-btn:active{background:rgba(255,255,255,0.32);}
+.app-version{justify-self:end;display:inline-block;padding:3px 5px;border-radius:7px;background:rgba(0,50,85,0.18);color:rgba(255,255,255,0.9);font-size:10px;font-weight:800;letter-spacing:0;white-space:nowrap;}
 .hdr-emoji{font-size:24px;margin-bottom:2px;animation:floatY 3s ease-in-out infinite;}
 @keyframes floatY{0%,100%{transform:translateY(0);}50%{transform:translateY(-5px);}}
 header h1{font-family:'Pacifico','Yu Gothic UI',cursive;font-size:23px;color:#fff;text-shadow:2px 3px 7px rgba(0,60,100,0.38);}
@@ -99,7 +103,24 @@ input[type="number"]::placeholder, input[type="text"]::placeholder{color:#c0dae6
 .toast{position:fixed;bottom:calc(26px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%) translateY(18px);background:#1a3a4a;color:#fff;padding:11px 20px;border-radius:13px;font-size:12px;font-weight:700;font-family:inherit;box-shadow:0 5px 20px rgba(0,0,0,0.22);white-space:pre-line;text-align:center;line-height:1.55;z-index:9999;opacity:0;pointer-events:none;transition:opacity 0.28s ease,transform 0.28s ease;max-width:290px;width:88%;}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 .toast.warn{background:linear-gradient(135deg,#FF6B35,#E8325A);}
-footer{text-align:center;font-size:11px;color:#a0b8c0;margin-top:10px;font-weight:600;}
+footer{text-align:center;font-size:11px;color:#8ca5af;margin-top:10px;font-weight:600;}
+.maker-credit{display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px;color:#657e8b;font-size:10px;font-weight:600;letter-spacing:0.06em;opacity:0.75;}
+.maker-credit::before,.maker-credit::after{content:'';display:block;width:20px;height:1px;background:#bad1db;}
+.maker-credit strong{font-weight:800;}
+[hidden]{display:none!important;}
+.help-overlay{position:fixed;inset:0;background:rgba(0,38,60,0.64);backdrop-filter:blur(4px);z-index:990;}
+.help-modal{position:fixed;z-index:991;top:50%;left:50%;transform:translate(-50%,-50%);width:min(calc(100% - 32px),440px);max-height:82vh;max-height:82dvh;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#fff;border:1px solid #c5e2ed;border-radius:18px;box-shadow:0 15px 45px rgba(0,28,54,0.32);padding:20px 18px;color:#1a3a4a;text-align:left;}
+.help-modal-head{display:flex;align-items:center;justify-content:space-between;gap:10px;padding-bottom:10px;border-bottom:1px solid #d6ecf5;}
+.help-modal h2{font-size:17px;color:#006994;margin:0;font-weight:800;}
+.help-close{flex:none;display:grid;place-items:center;width:36px;height:36px;border:0;background:#e9f5fb;border-radius:50%;color:#006994;font-size:22px;cursor:pointer;}
+.help-intro{font-size:12px;line-height:1.7;margin-top:12px;color:#345769;}
+.help-steps{padding-left:22px;margin:14px 0;}
+.help-steps li{padding-left:4px;margin-bottom:12px;font-size:12px;line-height:1.75;}
+.help-steps strong{color:#006994;}
+.help-formula{background:#edf8fc;border-radius:12px;padding:12px;font-size:11px;line-height:1.8;}
+.help-formula strong{color:#006994;}
+.help-formula p{margin:5px 0;}
+.help-ok{display:block;width:100%;margin-top:14px;min-height:44px;background:linear-gradient(135deg,#0099cc,#006994);color:#fff;border:0;border-radius:10px;font-family:inherit;font-weight:800;font-size:13px;cursor:pointer;}
 
 @media (max-width:400px){
   .ocean-bg{height:168px;}
@@ -126,9 +147,12 @@ footer{text-align:center;font-size:11px;color:#a0b8c0;margin-top:10px;font-weigh
 
 <div class="container">
   <header>
-    <span class="app-version" aria-label="バージョン 1.1">Ver1.1</span>
     <div class="hdr-emoji">📖 🌺 🧮</div>
-    <h1>速読 文字数カウンター</h1>
+    <div class="header-title-row">
+      <button type="button" class="help-btn" id="help-button" aria-label="使い方を開く" aria-expanded="false" aria-controls="help-modal" onclick="openHelp()">？</button>
+      <h1>速読 文字数カウンター</h1>
+      <span class="app-version" aria-label="バージョン 1.1">Ver1.1</span>
+    </div>
     <div class="sub-txt">読んだ量を文字数に換算するだけのシンプル版</div>
   </header>
 
@@ -198,7 +222,30 @@ footer{text-align:center;font-size:11px;color:#a0b8c0;margin-top:10px;font-weigh
   <div class="tip">💡 <b>端数行数</b>＝最後のページで読んだ行数（0〜13行）。<br>15秒モードは結果を4倍して「1分あたり」に換算します。</div>
 
   <footer>📌 使用書籍：コミュニケーション大全</footer>
+  <div class="maker-credit">製作：<strong>りゅうたんAI</strong></div>
 </div>
+
+<div class="help-overlay" id="help-overlay" hidden onclick="closeHelp()"></div>
+<section class="help-modal" id="help-modal" role="dialog" aria-modal="true" aria-labelledby="help-title" hidden>
+  <div class="help-modal-head">
+    <h2 id="help-title">📖 使い方ガイド</h2>
+    <button type="button" class="help-close" id="help-close" aria-label="使い方を閉じる" onclick="closeHelp()">×</button>
+  </div>
+  <p class="help-intro">このアプリは、読んだ量を<strong>1分あたりの文字数</strong>に換算する計算ツールです。読み取り時間を測るタイマー機能はありません。</p>
+  <ol class="help-steps">
+    <li><strong>計算方法を選ぶ</strong><br>「ページ計算」では完読ページ数（16ページ以上）と端数行数（0～13行）を入力します。端数行がなければ空欄でもOKです。<br>「冊数計算」では読んだ冊数（パラ数）を入力します。0.1冊以上の小数も使えます。小数点が打てないときは入力欄の右にある「.」を押してください。</li>
+    <li><strong>読み取り時間を選ぶ</strong><br>「1分」は入力した量をそのまま換算。「15秒」は4倍して1分あたりの文字数を表示します。</li>
+    <li><strong>計測する</strong><br>「計測する」を押すと文字数が表示されます。結果の「コピー」ボタンで文字数をコピーできます。</li>
+    <li><strong>続けて計算／リセット</strong><br>数字やモードを変えたら、もう一度「計測する」を押してください。古い結果は自動で消えます。「リセット」は入力を消し、ページ計算・1分モードに戻します。</li>
+  </ol>
+  <div class="help-formula">
+    <strong>計算の基準（使用書籍：コミュニケーション大全）</strong>
+    <p>ページ：｛（完読ページ数 − 15）× 14行 ＋ 端数行数｝× 40文字</p>
+    <p>冊数：読んだ冊数 × 176,960文字</p>
+    <p>※ 最初の15ページは除外。15秒モードは計算結果を4倍して表示します。</p>
+  </div>
+  <button type="button" class="help-ok" onclick="closeHelp()">閉じる</button>
+</section>
 
 <script>
 let calcType = 'page';
@@ -207,6 +254,24 @@ let lastResult = null;
 const PREF_KEY = 'spd_counter_pref_test_v1_1';
 
 function fmt(n){ return Number(n).toLocaleString(); }
+
+function openHelp(){
+  document.getElementById('help-overlay').hidden = false;
+  document.getElementById('help-modal').hidden = false;
+  document.getElementById('help-button').setAttribute('aria-expanded','true');
+  document.body.style.overflow = 'hidden';
+  document.getElementById('help-close').focus();
+}
+function closeHelp(){
+  document.getElementById('help-overlay').hidden = true;
+  document.getElementById('help-modal').hidden = true;
+  document.getElementById('help-button').setAttribute('aria-expanded','false');
+  document.body.style.overflow = '';
+  document.getElementById('help-button').focus();
+}
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && !document.getElementById('help-modal').hidden) closeHelp();
+});
 
 function invalidateResult(){
   lastResult = null;
